@@ -1,0 +1,13 @@
+{
+    "name": "General",
+    "version": "0.0.1",
+    "description": "A \"Hello world\" program is a computer program that outputs \"Hello World\" (or some variant) on a display device",
+    "keywords": "planet, happiness, people",
+    "authors": [{
+        "name": "Gandalf Pro",
+        "email": "asoc04@hotmail.com"
+    }],
+    "license": "MIT",
+    "frameworks": "*",
+    "platforms": "*"
+}
