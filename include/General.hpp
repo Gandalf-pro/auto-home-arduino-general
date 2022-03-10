@@ -27,11 +27,23 @@ class Feature {
         return this->name;
     }
 
-    virtual void execute(const ArduinoJson6192_F1::VariantConstRef& doc) = 0;
+    virtual void execute(const JsonObject& doc) = 0;
 
-    virtual String getData() = 0;
+    virtual void getData(const JsonObject& doc) = 0;
 
-    virtual String toJson() = 0;
+    virtual String toJson() {
+        StaticJsonDocument<256> doc;
+        doc["name"] = this->getName();
+        doc["type"] = this->type;
+        auto data = doc.createNestedObject("data");
+
+        // Data
+        this->getData(data);
+
+        String output;
+        serializeJson(doc, output);
+        return output;
+    };
 
     virtual void loop(){};
 };
@@ -53,7 +65,7 @@ class Device {
     Feature* features[N];
     size_t featuresLength = 0;
 
-    void getFeaturesArray(JsonArray& arr) {
+    void getFeaturesArray(const JsonArray& arr) {
         for (size_t i = 0; i < this->featuresLength; i++) {
             // JsonObject obj =  arr.createNestedObject();
             arr.add(serialized(this->features[i]->toJson()));
@@ -128,7 +140,7 @@ class Device {
         }
     }
 
-    void execute(DynamicJsonDocument const& doc) {
+    void execute(const DynamicJsonDocument& doc) {
         // Loop through features to see if key belongs to it
         for (size_t i = 0; i < this->featuresLength; i++) {
             Feature* fea = this->features[i];

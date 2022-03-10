@@ -16,34 +16,23 @@ class LedFeature : public Feature {
     LedFeature(Device& device, String name);
     ~LedFeature();
 
-    String getData() {
-        String message = "{";
-        message += "\"r\":" + String(r);
-        message += ", \"g\":" + String(g);
-        message += ", \"b\":" + String(b);
-        return message + "}";
+    void getData(const JsonObject& doc) {
+        doc["r"] = this->r;
+        doc["g"] = this->g;
+        doc["b"] = this->b;
     }
 
-    String toJson(){
-        String message = "{";
-        message += "\"name\":" + this->getName();
-        message += ",\"type\":" + this->type;
-        message += ",\"data\":" + this->getData();
-        return message + "}";
-    }
-
-    void execute(const ArduinoJson6192_F1::VariantConstRef& doc){
-        if(doc.containsKey("r")){
+    void execute(const JsonObject& doc) {
+        if (doc.containsKey("r")) {
             this->r = doc["r"];
         }
-        if(doc.containsKey("g")){
+        if (doc.containsKey("g")) {
             this->g = doc["g"];
         }
-        if(doc.containsKey("b")){
+        if (doc.containsKey("b")) {
             this->b = doc["b"];
         }
     }
-
 };
 
 LedFeature::LedFeature(Device& device, String name) : Feature(device, name) {

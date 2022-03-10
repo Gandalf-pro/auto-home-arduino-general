@@ -165,21 +165,11 @@ class BlindsFeature : public Feature {
     BlindsFeature(Device& device, String name, uint8_t relayUpPin, uint8_t relayDownPin, uint8_t switchPin, uint8_t upButtonPin, uint8_t downButtonPin);
     ~BlindsFeature();
 
-    String getData() {
-        String message = "{";
-        message += "\"blindsLevel\":" + String(blindsLevel);
-        return message + "}";
+    void getData(const JsonObject& doc) {
+        doc["blindsLevel"] = this->blindsLevel;
     }
 
-    String toJson(){
-        String message = "{";
-        message += "\"name\":" + this->getName();
-        message += ",\"type\":" + this->type;
-        message += ",\"data\":" + this->getData();
-        return message + "}";
-    }
-
-    void execute(const ArduinoJson6192_F1::VariantConstRef& doc) {
+    void execute(const JsonObject& doc) {
         if (doc.containsKey("blindsLevel")) {
             gotoPercent(doc["blindsLevel"]);
         }

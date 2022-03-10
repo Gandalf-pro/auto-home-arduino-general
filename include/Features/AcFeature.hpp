@@ -18,32 +18,22 @@ class AcFeature : public Feature {
     AcFeature(Device& device, String name, uint8_t pin);
     ~AcFeature();
 
-    String getData() {
+    void getData(const JsonObject& doc) {
         if (this->ac == nullptr) {
-            return "{}";
+            return;
         }
-        String message = "{";
-        message += "\"power\":" + String(ac->getPower());
-        message += ", \"temp\":" + String(ac->getTemp());
-        message += ", \"fan\":" + String(ac->getFan());
-        message += ", \"mode\":" + String(ac->getMode());
-        message += ", \"swing\":" + String(ac->getSwing());
-        return message + "}";
-    }
-
-    String toJson(){
-        String message = "{";
-        message += "\"name\":" + this->getName();
-        message += ",\"type\":" + this->type;
-        message += ",\"data\":" + this->getData();
-        return message + "}";
+        doc["power"] = String(ac->getPower());
+        doc["temp"] = String(ac->getTemp());
+        doc["fan"] = String(ac->getFan());
+        doc["mode"] = String(ac->getMode());
+        doc["swing"] = String(ac->getSwing());
     }
 
     void sendAcSignal() {
         ac->send(6);
     }
 
-    void execute(const ArduinoJson6192_F1::VariantConstRef& doc) {
+    void execute(const JsonObject& doc) {
         if (this->ac == nullptr) {
             return;
         }
