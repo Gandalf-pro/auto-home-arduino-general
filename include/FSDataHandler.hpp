@@ -1,5 +1,5 @@
-#if !defined(DATA_HANDLER_1)
-#define DATA_HANDLER_1
+#ifndef DATA_HANDLER_1_FS
+#define DATA_HANDLER_1_FS
 #include <Arduino.h>
 #include <LittleFS.h>
 
@@ -39,6 +39,7 @@ class FSDataHandler {
 
    public:
     FSDataHandler(home::Device* device);
+    FSDataHandler(home::Device* device, const String& deviceName, const String& roomName);
     ~FSDataHandler();
 
     void readData() {
@@ -86,8 +87,13 @@ class FSDataHandler {
 FSDataHandler::FSDataHandler(home::Device* device) {
     this->device = device;
 }
+FSDataHandler::FSDataHandler(home::Device* device, const String& deviceName, const String& roomName) {
+    this->device = device;
+    this->deviceName = deviceName;
+    this->roomName = roomName;
+}
 
 FSDataHandler::~FSDataHandler() {
 }
 
-#endif  // DATA_HANDLER_1
+#endif  // DATA_HANDLER_1_FS

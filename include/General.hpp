@@ -20,21 +20,25 @@ class Feature {
    public:
     String availableLogics[2] = {"gfd", "asd"};
     String availableActions[2] = {"gfd", "asd"};
-    Feature(Device& device, String name);
+    Feature(String type, Device& device, String name);
     ~Feature();
 
     String getName() {
         return this->name;
     }
 
-    virtual void execute(const JsonObject& doc) = 0;
+    String getType() {
+        return this->type;
+    }
+
+    virtual void execute(const JsonObjectConst& doc) = 0;
 
     virtual void getData(const JsonObject& doc) = 0;
 
     virtual String toJson() {
-        StaticJsonDocument<256> doc;
+        StaticJsonDocument<360> doc;
         doc["name"] = this->getName();
-        doc["type"] = this->type;
+        doc["type"] = this->getType();
         auto data = doc.createNestedObject("data");
 
         // Data
@@ -46,9 +50,11 @@ class Feature {
     };
 
     virtual void loop(){};
+    virtual void setup(){};
 };
 
-Feature::Feature(Device& device, String name) {
+Feature::Feature(String type, Device& device, String name) {
+    this->type = type;
     this->device = &device;
     this->name = name;
 }
@@ -67,7 +73,6 @@ class Device {
 
     void getFeaturesArray(const JsonArray& arr) {
         for (size_t i = 0; i < this->featuresLength; i++) {
-            // JsonObject obj =  arr.createNestedObject();
             arr.add(serialized(this->features[i]->toJson()));
         }
     }
@@ -96,11 +101,11 @@ class Device {
         this->room = room;
     }
 
-    void addFeature(Feature& feature) {
+    void addFeature(Feature* feature) {
         if (this->featuresLength >= N) {
             return;
         }
-        this->features[this->featuresLength] = &feature;
+        this->features[this->featuresLength] = feature;
         this->featuresLength++;
     }
 
@@ -123,12 +128,15 @@ class Device {
     }
 
     String getData() {
-        StaticJsonDocument<256> doc;
+        DynamicJsonDocument doc(1024);
         JsonArray featuresArray = doc.createNestedArray("features");
         this->getFeaturesArray(featuresArray);
         doc["name"] = this->getName();
         doc["room"] = this->getRoom();
         String output;
+        if(doc.overflowed()){
+            return "Overflowed";
+        }
         serializeJson(doc, output);
         return output;
     }
@@ -137,6 +145,12 @@ class Device {
         // Loop for features
         for (size_t i = 0; i < this->featuresLength; i++) {
             this->features[i]->loop();
+        }
+    }
+    void setup() {
+        // Loop for setups
+        for (size_t i = 0; i < this->featuresLength; i++) {
+            this->features[i]->setup();
         }
     }
 

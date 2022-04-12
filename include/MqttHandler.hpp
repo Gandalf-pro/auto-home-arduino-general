@@ -27,22 +27,28 @@
 
 void gotMessage(char* topic, byte* payload, unsigned int length);
 
+WiFiClient wifiClient;
+PubSubClient pubClient(wifiClient);
+
 class MqttHandler {
    private:
     WiFiClient* espClient;
     PubSubClient* client;
     FSDataHandler* dataHandler;
     home::Device* device;
+    char mqttServerIp[24] = {0};
+    char topicToSubStr[50] = {0};
     /* data */
    public:
     PubSubClient* getClient() {
         return this->client;
     }
 
-    void publish(const char* topic,const char* payload){
+    void publish(const char* topic, const char* payload) {
         this->client->publish(topic, payload);
     }
     void mqttReconnect() {
+        delay(100);
         uint8 tried = 0;
         // Loop until we're reconnected or tried 5 times
         while (!this->client->connected() && tried < 5) {
@@ -51,10 +57,9 @@ class MqttHandler {
             // Create a random this->client->ID
             String clientId = "ESP8266Client-";
 
-            randomSeed(millis());
             clientId += String(random(0xffff), HEX);
             // Attempt to connect
-            if (this->client->connect(clientId.c_str(), MQTT_USER, MQTT_PASS)) {
+            if (this->client->connect(clientId.c_str())) {
                 Serial.println("connected");
                 // Once connected, publish an announcement...
                 Serial.println("Publishing");
@@ -62,11 +67,13 @@ class MqttHandler {
                 // ... and resubscribe
                 String topicToSub = this->dataHandler->getRoomName() + "/" + this->dataHandler->getDeviceName();
                 Serial.println("Topic to sub:" + topicToSub);
-                this->client->subscribe(topicToSub.c_str());
-                this->client->subscribe("haha/papa");
-                // this->client->subscribe(("ozgur/" + (String)hostName).c_str());
+                // Copy                
+                strcpy(topicToSubStr, topicToSub.c_str());
+                this->client->subscribe(this->topicToSubStr);
+                this->client->subscribe("all/data");
                 // Send the register info
                 this->client->publish("register-device", this->device->getData().c_str());
+                this->client->publish("devices-debug", "12");
             } else {
                 Serial.print("failed, rc=");
                 Serial.print(this->client->state());
@@ -79,9 +86,11 @@ class MqttHandler {
     }
 
     void mqttSetup(String serverIp) {
+        strcpy(this->mqttServerIp, serverIp.c_str());
         Serial.println("Seting up mqtt");
-        this->client->setServer(serverIp.c_str(), MQTT_PORT);
+        this->client->setServer(this->mqttServerIp, MQTT_PORT);
         this->client->setCallback(gotMessage);
+        this->client->setBufferSize(1024);
     }
 
     void mqttLoop() {
@@ -94,7 +103,8 @@ class MqttHandler {
                 // Get the ip again and try on the next loop call
                 String ip = Setup::dicoverMqttServer(true);
                 if (!ip.equals("0")) {
-                    this->client->setServer(ip.c_str(), MQTT_PORT);
+                    strcpy(this->mqttServerIp, ip.c_str());
+                    this->client->setServer(this->mqttServerIp, MQTT_PORT);
                 }
             } else {
                 connected = true;
@@ -112,8 +122,10 @@ class MqttHandler {
 MqttHandler::MqttHandler(FSDataHandler* dataHandler, home::Device* device) {
     this->device = device;
     this->dataHandler = dataHandler;
-    this->espClient = new WiFiClient();
-    this->client = new PubSubClient(*this->espClient);
+    // this->espClient = new WiFiClient();
+    // this->client = new PubSubClient(*espClient);
+    this->espClient = &wifiClient;
+    this->client = &pubClient;
 }
 
 MqttHandler::~MqttHandler() {

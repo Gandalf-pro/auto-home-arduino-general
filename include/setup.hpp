@@ -55,7 +55,9 @@ void setupOta(const char* hostName, const char* pass) {
 }
 
 void setup_wifi() {
+    delay(10);
     WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
+    WiFi.hostname(HOSTNAME);
     // WiFi Manager
     WiFiManager wifiManager;
 

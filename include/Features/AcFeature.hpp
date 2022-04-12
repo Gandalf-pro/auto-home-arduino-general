@@ -12,7 +12,6 @@ class AcFeature : public Feature {
    private:
     /* data */
     IRVestelAc* ac = nullptr;
-    String type = "AcFeature";
 
    public:
     AcFeature(Device& device, String name, uint8_t pin);
@@ -33,7 +32,7 @@ class AcFeature : public Feature {
         ac->send(6);
     }
 
-    void execute(const JsonObject& doc) {
+    void execute(const JsonObjectConst& doc) {
         if (this->ac == nullptr) {
             return;
         }
@@ -83,9 +82,18 @@ class AcFeature : public Feature {
             sendAcSignal();
         }
     }
+
+    void setup() {
+        ac->begin();
+        delay(200);
+        ac->off();
+        ac->setTemp(26);
+        ac->setFan(kVestelAcFanMed);
+        ac->setMode(kVestelAcCool);
+    }
 };
 
-AcFeature::AcFeature(Device& device, String name, uint8_t pin) : Feature(device, name) {
+AcFeature::AcFeature(Device& device, String name, uint8_t pin) : Feature("AcFeature", device, name) {
     ac = new IRVestelAc(pin);
 }
 

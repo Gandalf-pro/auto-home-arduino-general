@@ -7,35 +7,72 @@ namespace home {
 class LedFeature : public Feature {
    private:
     /* data */
-    String type = "LedFeature";
     uint8 r = 0;
     uint8 g = 0;
     uint8 b = 0;
 
-   public:
-    LedFeature(Device& device, String name);
-    ~LedFeature();
+    // Pins
+    uint8_t rPin;
+    uint8_t gPin;
+    uint8_t bPin;
 
-    void getData(const JsonObject& doc) {
-        doc["r"] = this->r;
-        doc["g"] = this->g;
-        doc["b"] = this->b;
+    int rgbToPwmSignal(uint8_t color) {
+        long fetOffset = map(color, 0, 255, 0, 64);
+        return map(fetOffset, 0, 255, 0, 1023);
     }
 
-    void execute(const JsonObject& doc) {
+   public:
+    LedFeature(Device& device, String name, uint8_t rPin, uint8_t gPin, uint8_t bPin);
+    ~LedFeature();
+
+    uint8 getR() {
+        return this->r;
+    }
+    uint8 getG() {
+        return this->g;
+    }
+    uint8 getB() {
+        return this->b;
+    }
+    void setR(uint8 r) {
+        analogWrite(this->rPin, rgbToPwmSignal(r));
+        this->r = r;
+    }
+    void setG(uint8 g) {
+        analogWrite(this->gPin, rgbToPwmSignal(g));
+        this->g = g;
+    }
+    void setB(uint8 b) {
+        analogWrite(this->bPin, rgbToPwmSignal(b));
+        this->b = b;
+    }
+
+    void getData(const JsonObject& doc) {
+        doc["r"] = this->getR();
+        doc["g"] = this->getG();
+        doc["b"] = this->getB();
+    }
+
+    void execute(const JsonObjectConst& doc) {
         if (doc.containsKey("r")) {
-            this->r = doc["r"];
+            this->setR(doc["r"]);
         }
         if (doc.containsKey("g")) {
-            this->g = doc["g"];
+            this->setG(doc["g"]);
         }
         if (doc.containsKey("b")) {
-            this->b = doc["b"];
+            this->setB(doc["b"]);
         }
     }
 };
 
-LedFeature::LedFeature(Device& device, String name) : Feature(device, name) {
+LedFeature::LedFeature(Device& device, String name, uint8_t rPin, uint8_t gPin, uint8_t bPin) : Feature("LedFeature", device, name) {
+    this->rPin = rPin;
+    this->gPin = gPin;
+    this->bPin = bPin;
+    analogWrite(rPin, 0);
+    analogWrite(gPin, 0);
+    analogWrite(bPin, 0);
 }
 
 LedFeature::~LedFeature() {

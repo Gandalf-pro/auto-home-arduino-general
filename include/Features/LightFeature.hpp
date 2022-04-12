@@ -8,7 +8,6 @@ class LightFeature : public Feature {
    private:
     /* data */
     bool state = false;
-    String type = "LightFeature";
 
     // Pins
     uint8 relayPin;
@@ -32,14 +31,14 @@ class LightFeature : public Feature {
         this->state = state;
     }
 
-    void execute(const JsonObject& doc) {
+    void execute(const JsonObjectConst& doc) {
         if (doc.containsKey("state")) {
             this->setState(doc["state"]);
         }
     }
 };
 
-LightFeature::LightFeature(Device& device, String name, uint8 relayPin) : Feature(device, name) {
+LightFeature::LightFeature(Device& device, String name, uint8 relayPin) : Feature("LightFeature", device, name) {
     this->relayPin = relayPin;
 }
 

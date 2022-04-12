@@ -4,15 +4,14 @@
 #include <General.hpp>
 int down1per = 235;
 int up1per = 260;
-int timeOutTime = 35 * 1000;
+unsigned long timeOutTime = 35 * 1000;
 
 namespace home {
 class BlindsFeature : public Feature {
    private:
     /* data */
-    String type = "BlindsFeature";
     uint8 blindsLevel = 0;
-    uint8 gotoLevel = -1;
+    int gotoLevel = -1;
 
     // Pins
     uint8_t relayUpPin;
@@ -29,7 +28,7 @@ class BlindsFeature : public Feature {
         unsigned long current = millis();
         unsigned long initial = millis();
         ;
-        Serial.printf("Waiting for %d milis\n", wait);
+        Serial.printf("Waiting for %ld milis\n", wait);
 
         // delay(wait);
         // for (;current - initial <= wait;current = millis()){
@@ -77,10 +76,11 @@ class BlindsFeature : public Feature {
                 if (!digitalRead(switchPin)) return false;
             }
         }
+        return false;
     }
 
     int zeroLoop() {
-        int initialTime = millis();
+        unsigned long initialTime = millis();
         // Going up
         digitalWrite(relayUpPin, LOW);
 
@@ -161,6 +161,26 @@ class BlindsFeature : public Feature {
         // sendAllValues();
     }
 
+    void buttonsLoop() {
+        if (!digitalRead(this->upButtonPin) && digitalRead(this->downButtonPin)) {
+            Serial.println("Got button up");
+            delay(100);
+            if (!digitalRead(this->upButtonPin)) {
+                delay(200);
+                gotoPercent(0);
+                delay(250);
+            }
+        } else if (!digitalRead(this->downButtonPin) && digitalRead(this->upButtonPin)) {
+            Serial.println("Got button down");
+            delay(100);
+            if (!digitalRead(this->downButtonPin)) {
+                delay(200);
+                gotoPercent(100);
+                delay(250);
+            }
+        }
+    }
+
    public:
     BlindsFeature(Device& device, String name, uint8_t relayUpPin, uint8_t relayDownPin, uint8_t switchPin, uint8_t upButtonPin, uint8_t downButtonPin);
     ~BlindsFeature();
@@ -169,14 +189,28 @@ class BlindsFeature : public Feature {
         doc["blindsLevel"] = this->blindsLevel;
     }
 
-    void execute(const JsonObject& doc) {
+    void execute(const JsonObjectConst& doc) {
         if (doc.containsKey("blindsLevel")) {
-            gotoPercent(doc["blindsLevel"]);
+            gotoLevel = doc["blindsLevel"];
+            // gotoPercent(doc["blindsLevel"]);
         }
+    }
+
+    void loop() {
+        this->buttonsLoop();
+        if (gotoLevel != -1) {
+            gotoPercent(gotoLevel);
+            gotoLevel = -1;
+            delay(100);
+        }
+    }
+
+    void setup() {
+        this->handleZero();
     }
 };
 
-BlindsFeature::BlindsFeature(Device& device, String name, uint8_t relayUpPin, uint8_t relayDownPin, uint8_t switchPin, uint8_t upButtonPin, uint8_t downButtonPin) : Feature(device, name) {
+BlindsFeature::BlindsFeature(Device& device, String name, uint8_t relayUpPin, uint8_t relayDownPin, uint8_t switchPin, uint8_t upButtonPin, uint8_t downButtonPin) : Feature("BlindsFeature", device, name) {
     this->relayUpPin = relayUpPin;
     this->relayDownPin = relayDownPin;
     this->switchPin = switchPin;
