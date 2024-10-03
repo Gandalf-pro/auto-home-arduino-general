@@ -3,7 +3,8 @@
 
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
-#include <ir_Vestel.h>
+#include <ir_MitsubishiHeavy.h>
+
 
 #include <General.hpp>
 
@@ -11,7 +12,7 @@ namespace home {
 class AcFeature : public Feature {
    private:
     /* data */
-    IRVestelAc* ac = nullptr;
+    IRMitsubishiHeavy152Ac* ac = nullptr;
 
    public:
     AcFeature(Device& device, String name, uint8_t pin);
@@ -25,7 +26,7 @@ class AcFeature : public Feature {
         doc["temp"] = String(ac->getTemp());
         doc["fan"] = String(ac->getFan());
         doc["mode"] = String(ac->getMode());
-        doc["swing"] = String(ac->getSwing());
+        doc["swing"] = String(ac->getSwingVertical());
     }
 
     void sendAcSignal() {
@@ -50,16 +51,16 @@ class AcFeature : public Feature {
             int mod = doc["fan"];
             switch (mod) {
                 case 0:
-                    ac->setFan(kVestelAcFanAuto);
+                    ac->setFan(kMitsubishiHeavy152FanAuto);
                     break;
                 case 1:
-                    ac->setFan(kVestelAcFanLow);
+                    ac->setFan(kMitsubishiHeavy152FanLow);
                     break;
                 case 2:
-                    ac->setFan(kVestelAcFanMed);
+                    ac->setFan(kMitsubishiHeavy152FanMed);
                     break;
                 case 3:
-                    ac->setFan(kVestelAcFanHigh);
+                    ac->setFan(kMitsubishiHeavy152FanHigh);
                     break;
 
                 default:
@@ -74,7 +75,7 @@ class AcFeature : public Feature {
             changed = true;
         }
         if (doc.containsKey("swing")) {
-            ac->setSwing(doc["swing"]);
+            ac->setSwingVertical(doc["swing"]);
             changed = true;
         }
 
@@ -87,14 +88,14 @@ class AcFeature : public Feature {
         ac->begin();
         delay(200);
         ac->off();
-        ac->setTemp(26);
-        ac->setFan(kVestelAcFanMed);
-        ac->setMode(kVestelAcCool);
+        ac->setTemp(27);
+        ac->setFan(kMitsubishiHeavy152FanMed);
+        ac->setMode(kMitsubishiHeavyCool);
     }
 };
 
 AcFeature::AcFeature(Device& device, String name, uint8_t pin) : Feature("AcFeature", device, name) {
-    ac = new IRVestelAc(pin);
+    ac = new IRMitsubishiHeavy152Ac(pin);
 }
 
 AcFeature::~AcFeature() {
