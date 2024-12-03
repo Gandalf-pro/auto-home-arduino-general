@@ -120,6 +120,8 @@ class BlindsFeature : public Feature {
                 int perCal = millis() - initialTime;
                 perCal /= up1per;
                 blindsLevel -= perCal;
+            } else {
+                blindsLevel = 0;
             }
         } else {
             blindsLevel = 0;
