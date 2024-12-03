@@ -8,13 +8,17 @@ class LightLevelFeature : public Feature {
    private:
     /* data */
     int lightLevel = 0;
+    const long A = 200;  // Dark resistance in KΩ
+    const int B = 5;     // Light resistance (10 Lux) in KΩ
+    const int Rc = 10;   // Calibration resistance in KΩ
+    const int maxLightLevel = ((long)1023 * A * 10) / ((long)B * Rc * (1024 - 1023));
 
     // Pins
     uint8_t pin;
 
     int getLightLevel() {
-        int sensorValue = analogRead(this->pin);
-        return map(sensorValue, 0, 1023, 0, 100);
+        int V = analogRead(this->pin);
+        return map(((long)V * A * 10) / ((long)B * Rc * (1024 - V)), 0, maxLightLevel, 0, 100);
     }
 
    public:
