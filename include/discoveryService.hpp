@@ -1,6 +1,12 @@
 #ifndef MQTT_DISCOVERY_SER
 #define MQTT_DISCOVERY_SER
+
+#ifdef ESP8266
 #include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#endif
+
 #include <LittleFS.h>
 #include <WiFiUdp.h>
 
@@ -57,7 +63,12 @@ String dicoverMqttServer(bool ignoreSaved) {
     SendIP[3] = 255;
     Serial.println("Broadcast address: " + SendIP.toString());
     udp.beginPacket(SendIP, 29874);
+#ifdef ESP8266
     udp.write("p");
+#elif defined(ESP32)
+    udp.write((uint8_t)'p');
+#endif
+    udp.write((uint8_t)'p');
     udp.endPacket();
 
     unsigned long startTime = millis();

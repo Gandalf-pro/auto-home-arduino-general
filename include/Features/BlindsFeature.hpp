@@ -10,7 +10,7 @@ namespace home {
 class BlindsFeature : public Feature {
    private:
     /* data */
-    uint8 blindsLevel = 0;
+    uint8_t blindsLevel = 0;
     int gotoLevel = -1;
 
     // Pins

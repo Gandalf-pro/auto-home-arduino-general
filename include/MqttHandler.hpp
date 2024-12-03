@@ -1,7 +1,11 @@
 #ifndef MqttHandler_5645
 #define MqttHandler_5645
 
+#ifdef ESP8266
 #include <ESP8266WiFi.h>
+#elif defined(ESP32)
+#include <WiFi.h>
+#endif
 #include <PubSubClient.h>
 
 #include <FSDataHandler.hpp>
@@ -49,7 +53,7 @@ class MqttHandler {
     }
     void mqttReconnect() {
         delay(100);
-        uint8 tried = 0;
+        uint8_t tried = 0;
         // Loop until we're reconnected or tried 5 times
         while (!this->client->connected() && tried < 5) {
             tried++;
@@ -67,7 +71,7 @@ class MqttHandler {
                 // ... and resubscribe
                 String topicToSub = this->dataHandler->getRoomName() + "/" + this->dataHandler->getDeviceName();
                 Serial.println("Topic to sub:" + topicToSub);
-                // Copy                
+                // Copy
                 strcpy(topicToSubStr, topicToSub.c_str());
                 this->client->subscribe(this->topicToSubStr);
                 this->client->subscribe("all/data");

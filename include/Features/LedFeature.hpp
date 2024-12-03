@@ -7,9 +7,9 @@ namespace home {
 class LedFeature : public Feature {
    private:
     /* data */
-    uint8 r = 0;
-    uint8 g = 0;
-    uint8 b = 0;
+    uint8_t r = 0;
+    uint8_t g = 0;
+    uint8_t b = 0;
 
     // Pins
     uint8_t rPin;
@@ -25,24 +25,24 @@ class LedFeature : public Feature {
     LedFeature(Device& device, String name, uint8_t rPin, uint8_t gPin, uint8_t bPin);
     ~LedFeature();
 
-    uint8 getR() {
+    uint8_t getR() {
         return this->r;
     }
-    uint8 getG() {
+    uint8_t getG() {
         return this->g;
     }
-    uint8 getB() {
+    uint8_t getB() {
         return this->b;
     }
-    void setR(uint8 r) {
+    void setR(uint8_t r) {
         analogWrite(this->rPin, rgbToPwmSignal(r));
         this->r = r;
     }
-    void setG(uint8 g) {
+    void setG(uint8_t g) {
         analogWrite(this->gPin, rgbToPwmSignal(g));
         this->g = g;
     }
-    void setB(uint8 b) {
+    void setB(uint8_t b) {
         analogWrite(this->bPin, rgbToPwmSignal(b));
         this->b = b;
     }

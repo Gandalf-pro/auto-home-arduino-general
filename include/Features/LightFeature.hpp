@@ -10,10 +10,10 @@ class LightFeature : public Feature {
     bool state = false;
 
     // Pins
-    uint8 relayPin;
+    uint8_t relayPin;
 
    public:
-    LightFeature(Device& device, String name, uint8 relayPin);
+    LightFeature(Device& device, String name, uint8_t relayPin);
     ~LightFeature();
 
     void getData(const JsonObject& doc) {
@@ -38,7 +38,7 @@ class LightFeature : public Feature {
     }
 };
 
-LightFeature::LightFeature(Device& device, String name, uint8 relayPin) : Feature("LightFeature", device, name) {
+LightFeature::LightFeature(Device& device, String name, uint8_t relayPin) : Feature("LightFeature", device, name) {
     this->relayPin = relayPin;
 }
 

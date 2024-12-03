@@ -2,6 +2,7 @@
     "files.associations": {
         "*.rmd": "markdown",
         "atomic": "cpp",
-        "cstdint": "cpp"
+        "cstdint": "cpp",
+        "string_view": "cpp"
     }
 }
