@@ -16,8 +16,7 @@ class LightLevelFeature : public Feature {
     // Pins
     uint8_t pin;
 
-    int getLightLevel() {
-        int V = analogRead(this->pin);
+    int getLightLevel(int V) {
         return map(((long)V * A * 10) / ((long)B * Rc * (1024 - V)), 0, maxLightLevel, 0, 100);
     }
 
@@ -26,7 +25,9 @@ class LightLevelFeature : public Feature {
     ~LightLevelFeature();
 
     void getData(const JsonObject& doc) {
-        doc["lightLevel"] = this->getLightLevel();
+        int res = analogRead(this->pin);
+        doc["original"] = res;
+        doc["lightLevel"] = this->getLightLevel(res);
     }
 
     void execute(const JsonObjectConst& doc) {}

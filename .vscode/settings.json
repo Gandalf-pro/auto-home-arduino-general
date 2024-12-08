@@ -3,6 +3,7 @@
         "*.rmd": "markdown",
         "atomic": "cpp",
         "cstdint": "cpp",
-        "string_view": "cpp"
+        "string_view": "cpp",
+        "functional": "cpp"
     }
 }
