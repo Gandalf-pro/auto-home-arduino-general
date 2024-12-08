@@ -20,7 +20,7 @@ class FadeColorEffect : public ALedEffectParent<DATA_PIN> {
         ALedFeature<DATA_PIN>* feat = this->getLedFeature();
         uint8_t step = millis() % 256;
         for (int i = 0; i < feat->numberOfLeds; ++i) {
-            leds[i] = blend(feat->startColor, feat->endColor, step);
+            feat->leds[i] = blend(feat->startColor, feat->endColor, step);
         }
         FastLED.show();
     }

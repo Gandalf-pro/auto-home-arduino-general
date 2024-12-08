@@ -6,12 +6,11 @@
 #elif defined(ESP32)
 #include <WiFi.h>
 #endif
+#include <ArduinoJson.h>
 #include <PubSubClient.h>
 
 #include <FSDataHandler.hpp>
 #include <discoveryService.hpp>
-
-#include "ArduinoJson.h"
 
 #ifndef MQTT_USER
 #define MQTT_USER "deneme"

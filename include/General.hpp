@@ -1,10 +1,10 @@
 #ifndef general__1
 #define general__1
 
+#define FEATURE_MAX_LEN 10
+
 #include <Arduino.h>
 #include <ArduinoJson.h>
-
-#define N 10
 
 namespace home {
 class Feature;
@@ -49,8 +49,8 @@ class Feature {
         return output;
     };
 
-    virtual void loop(){};
-    virtual void setup(){};
+    virtual void loop() {};
+    virtual void setup() {};
 };
 
 Feature::Feature(String type, Device& device, String name) {
@@ -68,7 +68,7 @@ class Device {
     String room;
     String name;
 
-    Feature* features[N];
+    Feature* features[FEATURE_MAX_LEN];
     size_t featuresLength = 0;
 
     void getFeaturesArray(const JsonArray& arr) {
@@ -102,7 +102,7 @@ class Device {
     }
 
     void addFeature(Feature* feature) {
-        if (this->featuresLength >= N) {
+        if (this->featuresLength >= FEATURE_MAX_LEN) {
             return;
         }
         this->features[this->featuresLength] = feature;
@@ -134,7 +134,7 @@ class Device {
         doc["name"] = this->getName();
         doc["room"] = this->getRoom();
         String output;
-        if(doc.overflowed()){
+        if (doc.overflowed()) {
             return "Overflowed";
         }
         serializeJson(doc, output);
