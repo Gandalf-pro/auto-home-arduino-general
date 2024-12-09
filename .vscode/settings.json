@@ -4,6 +4,7 @@
         "atomic": "cpp",
         "cstdint": "cpp",
         "string_view": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "string": "cpp"
     }
 }

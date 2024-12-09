@@ -70,7 +70,7 @@ void setup_wifi() {
     // Reset after 2 minutes
     wifiManager.setTimeout(120);
     // Wifi ap mode ssid
-    bool wifiConnected = wifiManager.autoConnect("Arduino", "setup");
+    bool wifiConnected = wifiManager.autoConnect("Arduino", "setup666");
 
     if (wifiConnected) {
         Serial.println("");
