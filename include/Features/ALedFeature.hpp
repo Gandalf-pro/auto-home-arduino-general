@@ -4,28 +4,18 @@
 #include <FastLED.h>
 #include <ReactESP.h>
 
-#include <Features/ALedEffects/AnimationModes.hpp>
+#include <Features/ALedEffects/ALeadDataClass.hpp>
+#include <Features/ALedEffects/ALedEffects.hpp>
 #include <General.hpp>
 
 namespace home {
-template <uint8_t DATA_PIN>
-class ALedEffectParent;
 
 template <uint8_t DATA_PIN>
 class ALedFeature : public Feature {
    private:
    public:
-    int numberOfLeds;
-    bool isOn;
-    CRGB* leds;
-    uint8_t brightness;
-    uint8_t speed;
-    int delayMs;
-    AnimationModes animationMode;
-    CRGB startColor;
-    CRGB endColor;
-    reactesp::EventLoop* eventLoop;
-    ALedEffectParent<DATA_PIN>* currentEffect;
+    ALeadDataClass* data;
+    ALedEffectParent* currentEffect = nullptr;
     ALedFeature(Device& device, String name, int numberOfLeds);
     ~ALedFeature();
 
@@ -38,64 +28,50 @@ class ALedFeature : public Feature {
 
 }  // namespace home
 
-#include <Features/ALedEffects/ALedEffects.hpp>
-
 namespace home {
 
 template <uint8_t DATA_PIN>
 ALedFeature<DATA_PIN>::ALedFeature(Device& device, String name, int numberOfLeds)
-    : Feature("ALedFeature", device, name),
-      numberOfLeds(numberOfLeds),
-      isOn(false),
-      brightness(128),
-      speed(10),
-      delayMs(1000 / speed),
-      animationMode(kAnimationModeNone),
-      startColor(CRGB::Black),
-      endColor(CRGB::Black),
-      currentEffect(nullptr) {
-    this->eventLoop = new reactesp::EventLoop();
-    this->leds = (CRGB*)malloc(numberOfLeds * sizeof(CRGB));
-    FastLED.addLeds<WS2815, DATA_PIN, GRB>(this->leds, numberOfLeds);
-    FastLED.setBrightness(this->brightness);
+    : Feature("ALedFeature", device, name) {
+    this->data = new ALeadDataClass(numberOfLeds);
+
+    this->data->setController(&FastLED.addLeds<WS2815, DATA_PIN, RGB>(this->data->leds, numberOfLeds));
+    this->data->controller->setCorrection(TypicalSMD5050);
+    FastLED.setBrightness(128);
 }
 
 template <uint8_t DATA_PIN>
 ALedFeature<DATA_PIN>::~ALedFeature() {
-    free(this->leds);
-    delete this->eventLoop;
+    delete this->data;
 }
 
 template <uint8_t DATA_PIN>
 void ALedFeature<DATA_PIN>::getData(const JsonObject& doc) {
-    doc["isOn"] = this->isOn;
-    doc["animationMode"] = this->animationMode;
-    doc["speed"] = this->speed;
-    doc["brightness"] = this->brightness;
+    doc["animationMode"] = (uint8_t)this->data->animationMode;
+    doc["speed"] = this->data->speed;
+    doc["brightness"] = this->data->brightness;
     // Convert CRGB to hex
     char startColorHex[8];
-    sprintf(startColorHex, "#%02X%02X%02X", startColor.r, startColor.g, startColor.b);
+    sprintf(startColorHex, "#%02X%02X%02X", this->data->startColor.r, this->data->startColor.g, this->data->startColor.b);
     doc["startColor"] = String(startColorHex);
 
     char endColorHex[8];
-    sprintf(endColorHex, "#%02X%02X%02X", endColor.r, endColor.g, endColor.b);
+    sprintf(endColorHex, "#%02X%02X%02X", this->data->endColor.r, this->data->endColor.g, this->data->endColor.b);
     doc["endColor"] = String(endColorHex);
 }
 
 template <uint8_t DATA_PIN>
 void ALedFeature<DATA_PIN>::execute(const JsonObjectConst& doc) {
-    if (doc.containsKey("isOn")) {
-        this->isOn = doc["isOn"];
-    }
-    if (doc.containsKey("animationMode")) {
-        this->setAnimationMode((AnimationModes)doc["animationMode"]);
-    }
     if (doc.containsKey("speed")) {
-        this->speed = doc["speed"];
-        this->delayMs = 1000 / this->speed;
+        this->data->speed = doc["speed"];
+        if (this->data->speed == 0) {
+            this->data->speed = 1;
+        }
+
+        this->data->delayMs = 1000 / this->data->speed;
     }
     if (doc.containsKey("brightness")) {
-        this->brightness = doc["brightness"];
+        this->data->brightness = doc["brightness"];
     }
     if (doc.containsKey("startColor")) {
         const char* colorString = doc["startColor"];
@@ -106,7 +82,7 @@ void ALedFeature<DATA_PIN>::execute(const JsonObjectConst& doc) {
 
         long color = strtol(colorString + hasHash, NULL, 16);
 
-        this->startColor = color;
+        this->data->startColor = color;
     }
     if (doc.containsKey("endColor")) {
         const char* colorString = doc["endColor"];
@@ -117,16 +93,21 @@ void ALedFeature<DATA_PIN>::execute(const JsonObjectConst& doc) {
 
         long color = strtol(colorString + hasHash, NULL, 16);
 
-        this->endColor = color;
+        this->data->endColor = color;
+    }
+
+    if (doc.containsKey("animationMode")) {
+        this->setAnimationMode((AnimationModes)doc["animationMode"]);
     }
 }
 
 template <uint8_t DATA_PIN>
 void ALedFeature<DATA_PIN>::setAnimationMode(AnimationModes mode) {
-    this->animationMode = mode;
+    this->data->animationMode = mode;
 
     if (this->currentEffect != nullptr) {
         if (this->currentEffect->getAnimationMode() == mode) {
+            this->currentEffect->setup();
             return;
         } else {
             delete this->currentEffect;
@@ -134,11 +115,15 @@ void ALedFeature<DATA_PIN>::setAnimationMode(AnimationModes mode) {
     }
 
     switch (mode) {
+        case kAnimationModeNone:
+            this->data->controller->clearLedDataInternal(this->data->numberOfLeds);
+            this->data->controller->showLedsInternal(0);
+            break;
         case kAnimationModeStatic:
-            this->currentEffect = new StaticColorEffect<DATA_PIN>(this);
+            this->currentEffect = new StaticColorEffect(this->data);
             break;
         case kAnimationModeFade:
-            this->currentEffect = new FadeColorEffect<DATA_PIN>(this);
+            this->currentEffect = new FadeColorEffect(this->data);
             break;
             // case kAnimationModeRainbow:
             //     ALedEffects::rainbow(leds, numberOfLeds, millis() / 10, 7);
@@ -179,13 +164,12 @@ void ALedFeature<DATA_PIN>::setup() {
 
 template <uint8_t DATA_PIN>
 void ALedFeature<DATA_PIN>::loop() {
-    if (!this->isOn) {
-        return;
-    }
     if (this->currentEffect != nullptr) {
         this->currentEffect->loop();
+        this->data->eventLoop->tick();
+    } else {
+        delay(100);
     }
-    this->eventLoop->tick();
 }
 
 };  // namespace home

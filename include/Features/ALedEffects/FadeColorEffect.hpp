@@ -8,21 +8,32 @@
 
 namespace home {
 
-template <uint8_t DATA_PIN>
-class FadeColorEffect : public ALedEffectParent<DATA_PIN> {
+class FadeColorEffect : public ALedEffectParent {
    private:
+    int lastStep = 0;
+
    public:
-    FadeColorEffect(ALedFeature<DATA_PIN>* ledFeature) : ALedEffectParent<DATA_PIN>(ledFeature, kAnimationModeFade) {
+    FadeColorEffect(ALeadDataClass* data) : ALedEffectParent(data, kAnimationModeFade) {
     }
     ~FadeColorEffect() {}
 
+    int getStep() {
+        int old = this->lastStep;
+        this->lastStep = (old + 1) % 256;
+        return old;
+    }
+
     void loop() {
-        ALedFeature<DATA_PIN>* feat = this->getLedFeature();
-        uint8_t step = millis() % 256;
-        for (int i = 0; i < feat->numberOfLeds; ++i) {
-            feat->leds[i] = blend(feat->startColor, feat->endColor, step);
+        ALeadDataClass* data = this->data;
+        uint8_t step = this->getStep();
+
+        CRGB blendedColor = blend(data->startColor, data->endColor, step);
+        for (int i = 0; i < data->numberOfLeds; ++i) {
+            data->leds[i] = blendedColor;
         }
-        FastLED.show();
+        data->controller->showLedsInternal(data->brightness);
+        // CFastLED::delay();
+        delay(this->data->delayMs);
     }
 
     void setup() {

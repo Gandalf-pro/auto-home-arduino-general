@@ -3,26 +3,25 @@
 
 #include <Arduino.h>
 
-#include <Features/ALedFeature.hpp>
+#include <Features/ALedEffects/ALeadDataClass.hpp>
 
 namespace home {
 
-template <uint8_t DATA_PIN>
 class ALedEffectParent {
    private:
     AnimationModes mode;
-    ALedFeature<DATA_PIN>* ledFeature;
 
    public:
-    ALedEffectParent(ALedFeature<DATA_PIN>* ledFeature, AnimationModes mode) {
-        this->ledFeature = ledFeature;
+    ALeadDataClass* data;
+    ALedEffectParent(ALeadDataClass* data, AnimationModes mode) {
+        this->data = data;
         this->mode = mode;
     }
     ~ALedEffectParent() {
     }
 
-    ALedFeature<DATA_PIN>* getLedFeature() {
-        return this->ledFeature;
+    ALeadDataClass* getData() {
+        return this->data;
     }
 
     AnimationModes getAnimationMode() {
