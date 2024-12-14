@@ -1,7 +1,9 @@
 #pragma once
-#include <General.hpp>
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
 
-#include "DHT.h"
+#include <General.hpp>
 
 namespace home {
 class DhtSensorFeature : public Feature {
@@ -14,24 +16,24 @@ class DhtSensorFeature : public Feature {
     unsigned long lastReadAt = 0;
     DHT* dht;
 
-    bool readData() {
+    int readData() {
         // This will make sure we only take measurements every 30 seconds
-        if (millis() > (lastReadAt + 30000)) {
-            return true;
+        if ((millis() - this->lastReadAt) < 30000) {
+            return 1;
         }
 
         float h = this->dht->readHumidity();
         float t = this->dht->readTemperature();
         if (isnan(h) || isnan(t)) {
             Serial.println(F("Failed to read from DHT sensor!"));
-            return false;
+            return 0;
         }
         float hic = this->dht->computeHeatIndex(t, h, false);
         this->humidity = h;
         this->temp = t;
         this->heatIndex = hic;
         this->lastReadAt = millis();
-        return true;
+        return 2;
     }
 
    public:
@@ -47,7 +49,9 @@ class DhtSensorFeature : public Feature {
     }
 
     void getData(const JsonObject& doc) {
-        doc["error"] = this->readData();
+        doc["current"] = millis();
+        doc["status"] = this->readData();
+        doc["lastReadAt"] = this->lastReadAt;
         doc["humidity"] = this->humidity;
         doc["temp"] = this->temp;
         doc["heatIndex"] = this->heatIndex;
