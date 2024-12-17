@@ -18,7 +18,7 @@ class DhtSensorFeature : public Feature {
 
     int readData() {
         // This will make sure we only take measurements every 30 seconds
-        if ((millis() - this->lastReadAt) < 30000) {
+        if (this->lastReadAt != 0 && (millis() - this->lastReadAt) < 30000) {
             return 1;
         }
 
