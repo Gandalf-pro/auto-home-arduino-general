@@ -21,7 +21,7 @@ class ALeadDataClass {
 
     ALeadDataClass(int numberOfLeds) {
         this->numberOfLeds = numberOfLeds;
-        this->leds = (CRGB*)malloc(numberOfLeds * sizeof(CRGB));
+        this->leds = new CRGB[numberOfLeds];
         this->eventLoop = new reactesp::EventLoop();
         this->startColor = CRGB::Black;
         this->endColor = CRGB::Black;
@@ -33,7 +33,7 @@ class ALeadDataClass {
 
     ~ALeadDataClass() {
         delete this->eventLoop;
-        free(this->leds);
+        delete[] this->leds;
     }
 };
 
