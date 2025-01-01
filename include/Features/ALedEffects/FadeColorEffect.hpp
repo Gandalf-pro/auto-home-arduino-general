@@ -11,15 +11,29 @@ namespace home {
 class FadeColorEffect : public ALedEffectParent {
    private:
     int lastStep = 0;
+    bool isIncreasing = true;
 
    public:
     FadeColorEffect(ALeadDataClass* data) : ALedEffectParent(data, kAnimationModeFade) {
+        this->lastStep = 0;
+        this->isIncreasing = true;
     }
     ~FadeColorEffect() {}
 
     int getStep() {
         int old = this->lastStep;
-        this->lastStep = (old + 1) % 256;
+        int newStep = old + (this->isIncreasing ? 1 : -1);
+
+        if (newStep > 255) {
+            this->isIncreasing = !this->isIncreasing;
+            newStep = 254;
+        }
+        if (newStep < 0) {
+            this->isIncreasing = !this->isIncreasing;
+            newStep = 1;
+        }
+
+        this->lastStep = newStep;
         return old;
     }
 
@@ -31,9 +45,14 @@ class FadeColorEffect : public ALedEffectParent {
         for (int i = 0; i < data->numberOfLeds; ++i) {
             data->leds[i] = blendedColor;
         }
-        data->controller->showLedsInternal(data->brightness);
-        // CFastLED::delay();
+        data->controller->showLeds(data->brightness);
         delay(this->data->delayMs);
+        // unsigned long start = millis();
+        // do {
+        //     delay(1);
+        //     data->controller->showLeds(data->brightness);
+        //     yield();
+        // } while ((millis() - start) < this->data->delayMs);
     }
 
     void setup() {
