@@ -37,7 +37,10 @@ ALedFeature<DATA_PIN>::ALedFeature(Device& device, String name, int numberOfLeds
 
     this->data->setController(&FastLED.addLeds<WS2815, DATA_PIN, RGB>(this->data->leds, numberOfLeds));
     this->data->controller->setCorrection(TypicalSMD5050);
-    FastLED.setBrightness(128);
+
+    this->data->controller->clearLeds(numberOfLeds);
+    delay(1);
+    this->data->controller->showLeds(0);
 }
 
 template <uint8_t DATA_PIN>
@@ -111,13 +114,13 @@ void ALedFeature<DATA_PIN>::setAnimationMode(AnimationModes mode) {
             return;
         } else {
             delete this->currentEffect;
+            this->currentEffect = nullptr;
         }
     }
 
     switch (mode) {
         case kAnimationModeNone:
-            this->data->controller->clearLedDataInternal(this->data->numberOfLeds);
-            this->data->controller->showLedsInternal(0);
+            this->data->controller->clearLeds(this->data->numberOfLeds);
             break;
         case kAnimationModeStatic:
             this->currentEffect = new StaticColorEffect(this->data);
@@ -166,7 +169,7 @@ template <uint8_t DATA_PIN>
 void ALedFeature<DATA_PIN>::loop() {
     if (this->currentEffect != nullptr) {
         this->currentEffect->loop();
-        this->data->eventLoop->tick();
+        // this->data->eventLoop->tick();
     } else {
         delay(100);
     }

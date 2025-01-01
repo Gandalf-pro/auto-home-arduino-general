@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <FastLED.h>
-#include <ReactESP.h>
 
 #include <Features/ALedFeature.hpp>
 
@@ -11,8 +10,6 @@ namespace home {
 
 class StaticColorEffect : public ALedEffectParent {
    private:
-    reactesp::RepeatEvent* event = nullptr;
-
    public:
     StaticColorEffect(ALeadDataClass* data) : ALedEffectParent(data, kAnimationModeStatic) {
         this->setup();
@@ -27,16 +24,12 @@ class StaticColorEffect : public ALedEffectParent {
     }
 
     void setup() {
-        ALeadDataClass* data = this->getData();
+        ALeadDataClass* dataLocal = this->getData();
 
-        fill_solid(data->leds, data->numberOfLeds, data->startColor);
-
-        this->data->controller->showLedsInternal(this->data->brightness);
-
-        // if (this->event != nullptr) {
-        //     this->getData()->eventLoop->remove(this->event);
-        // }
-        // this->event = this->getData()->eventLoop->onRepeat(16, std::bind(&StaticColorEffect::runEventLoop, this));
+        fill_solid(dataLocal->leds, dataLocal->numberOfLeds, dataLocal->startColor);
+        dataLocal->controller->showLeds(dataLocal->brightness);
+        delay(1);
+        dataLocal->controller->showLeds(dataLocal->brightness);
     }
 };
 
