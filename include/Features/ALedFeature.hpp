@@ -121,6 +121,8 @@ void ALedFeature<DATA_PIN>::setAnimationMode(AnimationModes mode) {
     switch (mode) {
         case kAnimationModeNone:
             this->data->controller->clearLeds(this->data->numberOfLeds);
+            delay(1);
+            this->data->controller->clearLeds(this->data->numberOfLeds);
             break;
         case kAnimationModeStatic:
             this->currentEffect = new StaticColorEffect(this->data);

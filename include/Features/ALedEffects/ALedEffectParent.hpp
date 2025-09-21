@@ -17,8 +17,7 @@ class ALedEffectParent {
         this->data = data;
         this->mode = mode;
     }
-    ~ALedEffectParent() {
-    }
+    virtual ~ALedEffectParent() {}
 
     ALeadDataClass* getData() {
         return this->data;
