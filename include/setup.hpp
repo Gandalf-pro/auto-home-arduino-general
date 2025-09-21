@@ -17,6 +17,13 @@
 
 namespace Setup {
 
+// Global WiFiManager instance
+WiFiManager wifiManager;
+
+// WiFi monitoring constants
+const unsigned long WIFI_CHECK_INTERVAL = 10000;   // 10 seconds
+const unsigned long WIFI_RECONNECT_DELAY = 30000;  // 30 seconds
+
 void setupOta(const char* hostName, const char* pass) {
     // OTA setting
     ArduinoOTA.setHostname(hostName);
@@ -65,12 +72,14 @@ void setup_wifi() {
     WiFi.mode(WIFI_STA);  // explicitly set mode, esp defaults to STA+AP
     WiFi.hostname(HOSTNAME);
     // WiFi Manager
-    WiFiManager wifiManager;
 
     // Reset after 2 minutes
     wifiManager.setTimeout(120);
     // Wifi ap mode ssid
     bool wifiConnected = wifiManager.autoConnect("Arduino", "setup666");
+#ifdef ESP32
+    wifiManager.setDarkMode(true);
+#endif
 
     if (wifiConnected) {
         Serial.println("");
@@ -84,6 +93,46 @@ void setup_wifi() {
 
     randomSeed(micros());
 }
+static unsigned long lastCheckTime = 0;
+static unsigned long disconnectTime = 0;
+static bool connectionLost = false;
+
+// We dont need this in esp8266 since it does it automatically
+#ifdef ESP32
+void loop_wifi() {
+    unsigned long currentTime = millis();
+
+    // Check WiFi status every 10 seconds
+    if (currentTime - lastCheckTime >= WIFI_CHECK_INTERVAL) {
+        lastCheckTime = currentTime;
+
+        if (WiFi.status() != WL_CONNECTED) {
+            if (!connectionLost) {
+                // First time detecting disconnection
+                connectionLost = true;
+                disconnectTime = currentTime;
+                Serial.println("WiFi connection lost, waiting 30 seconds before retry...");
+            } else if (currentTime - disconnectTime >= 30000) {
+                // 30 seconds have passed, try to reconnect
+                Serial.println("Attempting to reconnect to WiFi...");
+                if (WiFi.reconnect()) {
+                    Serial.println("WiFi reconnected successfully");
+                    connectionLost = false;
+                } else {
+                    Serial.println("WiFi reconnection failed, restarting device...");
+                    wifiManager.reboot();
+                }
+            }
+        } else {
+            // WiFi is connected
+            if (connectionLost) {
+                Serial.println("WiFi connection restored");
+                connectionLost = false;
+            }
+        }
+    }
+}
+#endif
 
 }  // namespace Setup
 
