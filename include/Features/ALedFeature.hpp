@@ -130,12 +130,12 @@ void ALedFeature<DATA_PIN>::setAnimationMode(AnimationModes mode) {
         case kAnimationModeFade:
             this->currentEffect = new FadeColorEffect(this->data);
             break;
-            // case kAnimationModeRainbow:
-            //     ALedEffects::rainbow(leds, numberOfLeds, millis() / 10, 7);
-            //     break;
-            // case kAnimationModeFire:
-            //     ALedEffects::fire(leds, numberOfLeds);
-            //     break;
+        case kAnimationModeRainbow:
+            this->currentEffect = new RainbowEffect(this->data);
+            break;
+        case kAnimationModeFire:
+            this->currentEffect = new FireEffect(this->data);
+            break;
             // case kAnimationModeBreathe:
             //     ALedEffects::breathe(leds, numberOfLeds, startColor, brightness);
             //     break;
@@ -151,9 +151,9 @@ void ALedFeature<DATA_PIN>::setAnimationMode(AnimationModes mode) {
             // case kAnimationModeTheaterChaseRainbow:
             //     ALedEffects::theaterChaseRainbow(leds, numberOfLeds, this->delayMs);
             //     break;
-            // case kAnimationModeRunningLights:
-            //     ALedEffects::runningLights(leds, numberOfLeds, startColor, this->delayMs);
-            //     break;
+        case kAnimationModeRunningLights:
+            this->currentEffect = new RunningLightsEffect(this->data);
+            break;
             // case kAnimationModeTwinkle:
             //     ALedEffects::twinkle(leds, numberOfLeds, startColor, this->delayMs);
             //     break;
