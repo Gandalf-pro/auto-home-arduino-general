@@ -136,30 +136,30 @@ void ALedFeature<DATA_PIN>::setAnimationMode(AnimationModes mode) {
         case kAnimationModeFire:
             this->currentEffect = new FireEffect(this->data);
             break;
-            // case kAnimationModeBreathe:
-            //     ALedEffects::breathe(leds, numberOfLeds, startColor, brightness);
-            //     break;
-            // case kAnimationModeBreathFade:
-            //     ALedEffects::fade(leds, numberOfLeds, startColor, endColor, sin8(millis() / 4));
-            //     break;
-            // case kAnimationModeColorWipe:
-            //     ALedEffects::colorWipe(leds, numberOfLeds, startColor, this->delayMs);
-            //     break;
-            // case kAnimationModeTheaterChase:
-            //     ALedEffects::theaterChase(leds, numberOfLeds, startColor, this->delayMs);
-            //     break;
-            // case kAnimationModeTheaterChaseRainbow:
-            //     ALedEffects::theaterChaseRainbow(leds, numberOfLeds, this->delayMs);
-            //     break;
+        case kAnimationModeBreathe:
+            this->currentEffect = new BreatheEffect(this->data);
+            break;
+        case kAnimationModeBreathFade:
+            this->currentEffect = new BreathFadeEffect(this->data);
+            break;
+        case kAnimationModeColorWipe:
+            this->currentEffect = new ColorWipeEffect(this->data);
+            break;
+        case kAnimationModeTheaterChase:
+            this->currentEffect = new TheaterChaseEffect(this->data);
+            break;
+        case kAnimationModeTheaterChaseRainbow:
+            this->currentEffect = new TheaterChaseRainbowEffect(this->data);
+            break;
         case kAnimationModeRunningLights:
             this->currentEffect = new RunningLightsEffect(this->data);
             break;
-            // case kAnimationModeTwinkle:
-            //     ALedEffects::twinkle(leds, numberOfLeds, startColor, this->delayMs);
-            //     break;
-            // case kAnimationModeTwinkleRainbow:
-            //     ALedEffects::twinkleRainbow(leds, numberOfLeds, this->delayMs);
-            //     break;
+        case kAnimationModeTwinkle:
+            this->currentEffect = new TwinkleEffect(this->data);
+            break;
+        case kAnimationModeTwinkleRainbow:
+            this->currentEffect = new TwinkleRainbowEffect(this->data);
+            break;
     }
 }
 
