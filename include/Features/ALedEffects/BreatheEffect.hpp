@@ -10,30 +10,36 @@ namespace home {
 
 class BreatheEffect : public ALedEffectParent {
    private:
-    unsigned long startTime;
+    uint8_t phase;
 
    public:
     BreatheEffect(ALeadDataClass* data) : ALedEffectParent(data, kAnimationModeBreathe) {
-        this->startTime = millis();
+        this->phase = 0;
     }
     ~BreatheEffect() {}
 
     void loop() {
         ALeadDataClass* data = this->data;
 
-        // Calculate breathing pattern using sine wave
-        unsigned long elapsed = millis() - startTime;
-        uint8_t brightness = (sin8(elapsed / 4) * data->brightness) / 255;
+        // Update phase for smooth breathing animation
+        phase += data->speed;
+
+        // Calculate breathing brightness using sine wave (0-255 range)
+        uint8_t sineValue = sin8(phase);
+
+        // Scale the sine value to the desired brightness range
+        // This goes from 0 to data->brightness
+        uint8_t breathBrightness = scale8(sineValue, data->brightness);
 
         // Apply the breathing brightness to all LEDs
         fill_solid(data->leds, data->numberOfLeds, data->startColor);
-        data->controller->showLeds(brightness);
+        data->controller->showLeds(breathBrightness);
 
         delay(data->delayMs);
     }
 
     void setup() {
-        this->startTime = millis();
+        this->phase = 0;
     }
 };
 
