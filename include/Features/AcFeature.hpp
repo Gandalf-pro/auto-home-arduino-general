@@ -30,7 +30,7 @@ class AcFeature : public Feature {
     }
 
     void sendAcSignal() {
-        ac->send(6);
+        ac->send();
     }
 
     void execute(const JsonObjectConst& doc) {
